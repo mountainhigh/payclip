@@ -1,0 +1,10 @@
+:root {
+  --van-primary-color: #C68B8B;
+  --van-success-color: #8BAA8B;
+  --van-warning-color: #D4A574;
+  --van-danger-color: #C67676;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #FBF9F8; color: #4A3F3F; -webkit-font-smoothing: antialiased; }
+a { text-decoration: none; color: inherit; }
+::-webkit-scrollbar { width: 0; }
