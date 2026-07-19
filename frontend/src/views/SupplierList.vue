@@ -3,19 +3,30 @@
     <div class="toolbar">
       <el-input v-model="keyword" placeholder="搜索供应商" style="width:220px" clearable @keyup.enter="load" @clear="load" />
       <el-button type="primary" @click="openCreate">新增供应商</el-button>
+      <ImportExportButtons
+        export-url="/suppliers/export"
+        import-url="/suppliers/import"
+        template-url="/suppliers/template"
+        :export-params="{ keyword: keyword }"
+        @imported="load"
+      />
     </div>
+    <div class="table-scroll-container">
     <el-table :data="rows" border>
       <el-table-column prop="name" label="名称" />
       <el-table-column prop="type" label="类型" width="120" />
       <el-table-column prop="contact" label="联系方式" />
       <el-table-column prop="remark" label="备注" />
-      <el-table-column label="操作" width="140" fixed="right">
+      <el-table-column label="操作" width="120" fixed="right">
         <template #default="{ row }">
-          <el-button text type="primary" @click="openEdit(row)">编辑</el-button>
-          <el-button text type="danger" @click="onArchive(row)">归档</el-button>
+          <div class="action-col">
+            <el-button text type="primary" size="small" @click="openEdit(row)">编辑</el-button>
+            <el-button text type="danger" size="small" @click="onArchive(row)">归档</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
+    </div>
     <el-dialog v-model="dialog" :title="form.id ? '编辑供应商' : '新增供应商'" width="480px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="名称"><el-input v-model="form.name" /></el-form-item>
@@ -35,6 +46,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { supplierApi } from '../api'
+import ImportExportButtons from '../components/ImportExportButtons.vue'
 
 const rows = ref([])
 const keyword = ref('')
@@ -67,3 +79,16 @@ async function onArchive(row) {
 
 onMounted(load)
 </script>
+
+<style scoped>
+.action-col {
+  display: flex;
+  gap: 4px;
+  white-space: nowrap;
+  justify-content: center;
+}
+.action-col :deep(.el-button) {
+  margin: 0;
+  padding: 0 6px;
+}
+</style>

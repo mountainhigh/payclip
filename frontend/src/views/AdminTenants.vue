@@ -3,9 +3,10 @@
     <div class="toolbar">
       <h2 style="margin:0">租户管理</h2>
     </div>
-    <el-table :data="tenants" border>
+    <div class="table-scroll-container">
+    <el-table :data="tenants" border style="width:100%">
       <el-table-column prop="id" label="ID" width="60" />
-      <el-table-column prop="name" label="租户名称" width="180" />
+      <el-table-column prop="name" label="租户名称" min-width="180" />
       <el-table-column prop="plan" label="套餐" width="100">
         <template #default="{ row }">
           <el-tag>{{ planText(row.plan) }}</el-tag>
@@ -18,7 +19,7 @@
       </el-table-column>
       <el-table-column prop="employee_count" label="员工数" width="80" />
       <el-table-column prop="max_employees" label="上限" width="60" />
-      <el-table-column prop="plan_expires" label="到期时间" width="180" />
+      <el-table-column prop="plan_expires" label="到期时间" min-width="180" />
       <el-table-column label="操作" width="240">
         <template #default="{ row }">
           <el-button size="small" type="success" @click="onActivate(row.id)">开通</el-button>
@@ -27,6 +28,7 @@
         </template>
       </el-table-column>
     </el-table>
+    </div>
   </div>
 </template>
 

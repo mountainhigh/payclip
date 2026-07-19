@@ -9,16 +9,20 @@
       </template>
       <el-tabs v-model="activeTab">
         <el-tab-pane label="区域收款" name="region">
+          <div class="table-scroll-container">
           <el-table :data="regionData" border empty-text="暂无数据">
             <el-table-column prop="region" label="区域" />
             <el-table-column prop="amount" label="金额" align="right"><template #default="{ row }">{{ fmt(row.amount) }}</template></el-table-column>
           </el-table>
+          </div>
         </el-tab-pane>
         <el-tab-pane label="成本构成" name="cost">
+          <div class="table-scroll-container">
           <el-table :data="costData" border empty-text="暂无数据">
             <el-table-column prop="type" label="业务类型" />
             <el-table-column prop="amount" label="月成本" align="right"><template #default="{ row }">{{ fmt(row.amount) }}</template></el-table-column>
           </el-table>
+          </div>
         </el-tab-pane>
         <el-tab-pane label="趋势" name="trend">
           <div ref="trendRef" style="height:300px"></div>

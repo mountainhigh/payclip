@@ -1,8 +1,8 @@
 <template>
   <div class="layout">
     <router-view />
-    <van-tabbar v-model="active" route>
-      <van-tabbar-item to="/" icon="home-o">工作台</van-tabbar-item>
+    <van-tabbar route>
+      <van-tabbar-item to="/" icon="home-o" @click="onTabClick('/')">工作台</van-tabbar-item>
       <van-tabbar-item to="/payments/submit" icon="edit">填报</van-tabbar-item>
       <van-tabbar-item to="/salary" icon="balance-o">薪资</van-tabbar-item>
       <van-tabbar-item to="/profile" icon="contact">我的</van-tabbar-item>
@@ -11,8 +11,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-const active = ref(0)
+import { useRouter, useRoute } from 'vue-router'
+const router = useRouter()
+const route = useRoute()
+
+function onTabClick(path) {
+  // 当从其他页面点击工作台时，确保跳转到根路径
+  if (route.path !== path) {
+    router.push(path)
+  }
+}
 </script>
 
 <style scoped>

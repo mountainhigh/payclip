@@ -107,6 +107,8 @@ class Company(Base):
     introducer_user_id = Column(BigInteger, ForeignKey("users.id"), nullable=True)
     introducer_name = Column(String(50), nullable=True)
     sales_person_id = Column(BigInteger, ForeignKey("users.id"), nullable=True)
+    business_owner_id = Column(BigInteger, ForeignKey("users.id"), nullable=True)
+    contact_name = Column(String(50), nullable=True, comment="客户联系人姓名")
     contact_phone = Column(String(50), nullable=True)
     contact_email = Column(String(100), nullable=True)
     remark = Column(Text, nullable=True)
@@ -116,6 +118,7 @@ class Company(Base):
 
     introducer = relationship("User", foreign_keys=[introducer_user_id])
     sales_person = relationship("User", foreign_keys=[sales_person_id])
+    business_owner = relationship("User", foreign_keys=[business_owner_id])
     subscriptions = relationship("Subscription", back_populates="company", lazy="dynamic")
     onetime_projects = relationship("OneTimeProject", back_populates="company", lazy="dynamic")
     bills = relationship("Bill", back_populates="company", lazy="dynamic")
@@ -292,6 +295,24 @@ class CustomerPrepayment(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class PrepaymentLog(Base):
+    """预付款变动明细：每次余额变动都记录一条流水"""
+    __tablename__ = "prepayment_logs"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    tenant_id = Column(BigInteger, ForeignKey("tenants.id"), nullable=False, index=True)
+    company_id = Column(BigInteger, ForeignKey("companies.id"), nullable=False, index=True)
+    change_type = Column(String(20), nullable=False, comment="变动类型：in增加/out扣减")
+    amount = Column(DecimalCol(12, 2), nullable=False, comment="变动金额（正数）")
+    balance_after = Column(DecimalCol(12, 2), nullable=False, comment="变动后余额")
+    source = Column(String(30), nullable=False, default="overpayment",
+                    comment="来源：overpayment/payment/prepayment_use/manual")
+    payment_record_id = Column(BigInteger, ForeignKey("payment_records.id"), nullable=True, index=True)
+    bill_id = Column(BigInteger, ForeignKey("bills.id"), nullable=True, index=True)
+    operator_id = Column(BigInteger, ForeignKey("users.id"), nullable=True)
+    remark = Column(String(500), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+
 class CommissionDetail(Base):
     __tablename__ = "commission_details"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -372,6 +393,7 @@ class CostPreset(Base):
     tenant_id = Column(BigInteger, ForeignKey("tenants.id"), nullable=False, index=True)
     business_type = Column(String(50), nullable=False)
     default_cost = Column(DecimalCol(12, 2), nullable=False)
+    supplier_id = Column(BigInteger, ForeignKey("suppliers.id"), nullable=True, index=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -429,3 +451,37 @@ class BillFollowUpHistory(Base):
     changed_by = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     remark = Column(String(500), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class PaymentChannel(Base):
+    """收款渠道配置：在系统设置里维护，供收款填报时选择"""
+    __tablename__ = "payment_channels"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    tenant_id = Column(BigInteger, ForeignKey("tenants.id"), nullable=False, index=True)
+    name = Column(String(50), nullable=False, comment="渠道名称，如：银行转账")
+    code = Column(String(30), nullable=False, comment="渠道代码，如：bank")
+    payee_name = Column(String(80), nullable=True, comment="收款人姓名")
+    account_number = Column(String(100), nullable=True, comment="收款账号")
+    account_type = Column(String(30), nullable=True, comment="账号类型：储蓄/对公/支付宝/微信等")
+    is_active = Column(Boolean, nullable=False, default=True, index=True)
+    sort_order = Column(Integer, nullable=False, default=0, index=True)
+    remark = Column(String(500), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (UniqueConstraint("tenant_id", "code", name="uk_tenant_channel_code"),)
+
+
+class ServiceType(Base):
+    """服务类型配置：在系统设置里维护，供长期业务选择服务类型"""
+    __tablename__ = "service_types"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    tenant_id = Column(BigInteger, ForeignKey("tenants.id"), nullable=False, index=True)
+    name = Column(String(50), nullable=False, comment="服务类型名称，如：代理记账")
+    is_active = Column(Boolean, nullable=False, default=True, index=True)
+    sort_order = Column(Integer, nullable=False, default=0, index=True)
+    remark = Column(String(500), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (UniqueConstraint("tenant_id", "name", name="uk_tenant_service_type_name"),)

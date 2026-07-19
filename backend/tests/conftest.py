@@ -11,7 +11,7 @@ _DB_TEST = "payclip_test"
 
 os.environ["DATABASE_URL"] = (
     f"mysql+pymysql://{_DB_USER}:{_DB_PASS.replace('@','%40').replace('!','%21')}"
-    f"@{_DB_HOST}:{_DB_PORT}/{_DB_TEST}"
+    f"@{_DB_HOST}:{_DB_PORT}/{_DB_TEST}?charset=utf8mb4"
 )
 
 import pytest

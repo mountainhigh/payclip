@@ -278,3 +278,112 @@ html, body, #app {
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
+
+/* ==================== 移动端适配 ==================== */
+@media (max-width: 768px) {
+  html, body, #app {
+    font-size: 14px;
+  }
+
+  .page-container {
+    padding: 12px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .stat-card .num {
+    font-size: 24px;
+  }
+
+  .stat-card .label {
+    font-size: 12px;
+  }
+
+  .el-table {
+    font-size: 13px;
+  }
+
+  .el-table th,
+  .el-table td {
+    padding: 8px 4px !important;
+  }
+
+  .el-button {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .el-button--small {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .el-dialog {
+    width: 95% !important;
+    margin: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .el-form-item__label {
+    font-size: 13px;
+  }
+
+  .el-input,
+  .el-select {
+    font-size: 13px;
+  }
+
+  .el-pagination {
+    font-size: 12px;
+  }
+
+  .el-pagination .btn-prev,
+  .el-pagination .btn-next,
+  .el-pagination .el-pager li {
+    min-width: 28px;
+    height: 28px;
+    line-height: 28px;
+  }
+
+  .el-tabs__item {
+    font-size: 13px;
+    padding: 0 8px;
+  }
+
+  .el-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+  }
+}
+
+/* 表格横向滚动容器 */
+.table-scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: -20px;
+  margin-bottom: 16px;
+  padding: 20px;
+  border-radius: inherit;
+  width: calc(100% + 40px);
+}
+
+.table-scroll-container > .el-table {
+  min-width: 100%;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .table-scroll-container {
+    margin: -12px;
+    margin-bottom: 16px;
+    padding: 12px;
+  }
+
+  .table-scroll-container > .el-table {
+    min-width: 560px;
+  }
+}

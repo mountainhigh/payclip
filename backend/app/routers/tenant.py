@@ -23,10 +23,7 @@ def _serialize_tenant(t, db):
 @router.post("/invitations")
 def create_invitation(body: dict,
                       user: User = Depends(require_tenant_admin), db: Session = Depends(get_db)):
-    tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
-    emp_count = db.query(User).filter(User.tenant_id == user.tenant_id, User.is_active == True).count()
-    if emp_count >= tenant.max_employees:
-        raise HTTPException(403, f"已达员工上限（{tenant.max_employees}人），请升级套餐")
+    # v3: 员工数不限，不再校验 max_employees（§2.1/§2.5）
     token = secrets.token_hex(16)
     invite = InvitationLink(tenant_id=user.tenant_id, token=token, created_by=user.id,
                              expires_at=datetime.utcnow() + timedelta(days=7) if body.get("expire_days") else None)

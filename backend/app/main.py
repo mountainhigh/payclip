@@ -20,8 +20,8 @@ from .config import UPLOAD_DIR
 from .core.auth import hash_password
 from .routers import (auth_router, admin_router, tenant_router, users_router,
                       customers_router, suppliers_router, subscriptions_router,
-                      onetime_router, bills_router, payments_router, ledger_router,
-                      salaries_router, reports_router, system_router)
+                      onetime_router, bills_router, payments_router, prepayments_router,
+                      ledger_router, salaries_router, reports_router, system_router)
 
 app = FastAPI(title="薪资管理工具", version="2.0.0")
 
@@ -51,6 +51,47 @@ def startup():
                      data_scope="ALL", is_admin=True)
         db.add(admin)
         db.commit()
+    # 轻量级迁移：为 companies 表补充 business_owner_id / contact_name 字段（create_all 不会修改已有表）
+    _ensure_column(engine, "companies", "business_owner_id", "BIGINT NULL")
+    _ensure_column(engine, "companies", "contact_name", "VARCHAR(50) NULL")
+    # 为已存在的租户初始化默认收款渠道（仅当该租户无任何渠道时）
+    _init_default_payment_channels(db)
+
+
+def _init_default_payment_channels(db):
+    """为每个已有租户初始化默认收款渠道（仅当该租户无任何渠道时）"""
+    from .models import Tenant, PaymentChannel
+    tenants = db.query(Tenant).all()
+    DEFAULTS = [
+        {"name": "银行转账", "code": "bank", "payee_name": "", "account_number": "", "account_type": "对公", "sort_order": 1},
+        {"name": "支付宝", "code": "alipay", "payee_name": "", "account_number": "", "account_type": "个人", "sort_order": 2},
+        {"name": "微信", "code": "wechat", "payee_name": "", "account_number": "", "account_type": "个人", "sort_order": 3},
+        {"name": "现金", "code": "cash", "payee_name": "", "account_number": "", "account_type": "—", "sort_order": 4},
+    ]
+    for t in tenants:
+        existing = db.query(PaymentChannel).filter(PaymentChannel.tenant_id == t.id).count()
+        if existing > 0:
+            continue
+        for d in DEFAULTS:
+            db.add(PaymentChannel(tenant_id=t.id, name=d["name"], code=d["code"],
+                                  payee_name=d["payee_name"], account_number=d["account_number"],
+                                  account_type=d["account_type"], is_active=True,
+                                  sort_order=d["sort_order"]))
+    db.commit()
+
+
+def _ensure_column(eng, table_name, column_name, column_def):
+    """幂等添加列：若列不存在则 ALTER TABLE 添加。仅支持 MySQL/PostgreSQL 方言。"""
+    from sqlalchemy import text, inspect
+    insp = inspect(eng)
+    if not insp.has_table(table_name):
+        return
+    existing_cols = [c["name"] for c in insp.get_columns(table_name)]
+    if column_name in existing_cols:
+        return
+    with eng.connect() as conn:
+        conn.execute(text(f"ALTER TABLE `{table_name}` ADD COLUMN `{column_name}` {column_def}"))
+        conn.commit()
 
 
 # ==================== 挂载业务路由 ====================
@@ -64,6 +105,7 @@ app.include_router(subscriptions_router)
 app.include_router(onetime_router)
 app.include_router(bills_router)
 app.include_router(payments_router)
+app.include_router(prepayments_router)
 app.include_router(ledger_router)
 app.include_router(salaries_router)
 app.include_router(reports_router)

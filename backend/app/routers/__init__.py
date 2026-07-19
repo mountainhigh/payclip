@@ -9,6 +9,7 @@ from .subscriptions import router as subscriptions_router
 from .onetime import router as onetime_router
 from .bills import router as bills_router
 from .payments import router as payments_router
+from .prepayments import router as prepayments_router
 from .ledger import router as ledger_router
 from .salaries import router as salaries_router
 from .reports import router as reports_router
@@ -17,6 +18,6 @@ from .system import router as system_router
 __all__ = [
     "auth_router", "admin_router", "tenant_router", "users_router",
     "customers_router", "suppliers_router", "subscriptions_router",
-    "onetime_router", "bills_router", "payments_router", "ledger_router",
-    "salaries_router", "reports_router", "system_router",
+    "onetime_router", "bills_router", "payments_router", "prepayments_router",
+    "ledger_router", "salaries_router", "reports_router", "system_router",
 ]

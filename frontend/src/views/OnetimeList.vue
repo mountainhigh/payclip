@@ -5,32 +5,47 @@
         <el-option v-for="c in companies" :key="c.id" :label="c.name" :value="c.id" />
       </el-select>
       <el-button type="primary" @click="openCreate">新增一次性业务</el-button>
+      <ImportExportButtons
+        export-url="/onetime-projects/export"
+        import-url="/onetime-projects/import"
+        template-url="/onetime-projects/template"
+        :export-params="{ company_id: companyFilter }"
+        @imported="load"
+      />
     </div>
-    <el-table :data="rows" border>
-      <el-table-column label="客户" width="160"><template #default="{ row }">{{ companyName(row.company_id) }}</template></el-table-column>
-      <el-table-column prop="project_type" label="项目类型" width="130" />
+    <div class="table-scroll-container">
+    <el-table :data="rows" border style="width:100%">
+      <el-table-column label="客户" min-width="160"><template #default="{ row }">{{ companyName(row.company_id) }}</template></el-table-column>
+      <el-table-column prop="project_type" label="服务类型" min-width="130" />
       <el-table-column prop="revenue" label="收入" align="right" width="110"><template #default="{ row }">{{ fmt(row.revenue) }}</template></el-table-column>
       <el-table-column prop="cost" label="成本" align="right" width="110"><template #default="{ row }">{{ fmt(row.cost) }}</template></el-table-column>
       <el-table-column prop="gross_profit" label="毛利" align="right" width="110"><template #default="{ row }"><span style="color:var(--success)">{{ fmt(row.gross_profit) }}</span></template></el-table-column>
-      <el-table-column prop="owner_name" label="负责人" width="110" />
+      <el-table-column prop="owner_name" label="服务负责人" width="110" />
       <el-table-column prop="completion_date" label="完成日" width="120" />
       <el-table-column prop="is_received" label="收款" width="90" align="center"><template #default="{ row }"><el-tag :type="row.is_received ? 'success' : 'warning'">{{ row.is_received ? '已收' : '未收' }}</el-tag></template></el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="120" fixed="right">
         <template #default="{ row }">
-          <el-button text type="primary" @click="openEdit(row)">编辑</el-button>
-          <el-button text type="success" v-if="!row.is_received" @click="onReceive(row)">标记收款</el-button>
+          <div class="action-col">
+            <el-button text type="primary" size="small" @click="openEdit(row)">编辑</el-button>
+            <el-button text type="success" size="small" v-if="!row.is_received" @click="onReceive(row)">标记收款</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
+    </div>
 
     <el-dialog v-model="dialog" :title="form.id ? '编辑一次性业务' : '新增一次性业务'" width="520px">
       <el-form :model="form" label-width="100px">
         <el-form-item label="客户"><el-select v-model="form.company_id" filterable style="width:100%"><el-option v-for="c in companies" :key="c.id" :label="c.name" :value="c.id" /></el-select></el-form-item>
-        <el-form-item label="项目类型"><el-input v-model="form.project_type" /></el-form-item>
+        <el-form-item label="服务类型">
+          <el-select v-model="form.project_type" filterable allow-create default-first-option style="width:100%" placeholder="选择或输入服务类型">
+            <el-option v-for="t in serviceTypes" :key="t.id" :label="t.name" :value="t.name" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="收入"><el-input-number v-model="form.revenue" :min="0" :precision="2" style="width:100%" /></el-form-item>
         <el-form-item label="成本"><el-input-number v-model="form.cost" :min="0" :precision="2" style="width:100%" /></el-form-item>
         <el-form-item label="供应商"><el-select v-model="form.supplier_id" filterable clearable style="width:100%"><el-option v-for="s in suppliers" :key="s.id" :label="s.name" :value="s.id" /></el-select></el-form-item>
-        <el-form-item label="负责人"><el-select v-model="form.owner_id" filterable style="width:100%"><el-option v-for="u in users" :key="u.id" :label="u.name" :value="u.id" /></el-select></el-form-item>
+        <el-form-item label="服务负责人"><el-select v-model="form.owner_id" filterable style="width:100%"><el-option v-for="u in users" :key="u.id" :label="u.name" :value="u.id" /></el-select></el-form-item>
         <el-form-item label="完成日"><el-date-picker v-model="form.completion_date" type="date" value-format="YYYY-MM-DD" style="width:100%" /></el-form-item>
       </el-form>
       <template #footer>
@@ -44,12 +59,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { onetimeApi, customerApi, supplierApi, userApi } from '../api'
+import { onetimeApi, customerApi, supplierApi, userApi, configApi } from '../api'
+import ImportExportButtons from '../components/ImportExportButtons.vue'
 
 const rows = ref([])
 const companies = ref([])
 const suppliers = ref([])
 const users = ref([])
+const serviceTypes = ref([])
 const companyFilter = ref(null)
 const dialog = ref(false)
 const saving = ref(false)
@@ -63,12 +80,14 @@ async function load() {
   rows.value = r.data.items
 }
 async function loadRefs() {
-  const [c, s, u] = await Promise.all([
+  const [c, s, u, st] = await Promise.all([
     customerApi.list({ page: 1, page_size: 500 }),
     supplierApi.list({ page: 1, page_size: 200 }),
-    userApi.list({ page: 1, page_size: 200 })
+    userApi.list({ page: 1, page_size: 200 }),
+    configApi.serviceTypes().catch(() => ({ data: [] }))
   ])
   companies.value = c.data.items; suppliers.value = s.data.items; users.value = u.data.items
+  serviceTypes.value = (st.data || []).filter(t => t.is_active)
 }
 function openCreate() { form.value = { company_id: null, project_type: '', revenue: 0, cost: 0, supplier_id: null, owner_id: null, completion_date: '' }; dialog.value = true }
 async function onSave() {
@@ -76,10 +95,12 @@ async function onSave() {
   try {
     if (form.value.id) {
       await onetimeApi.update(form.value.id, form.value)
+      ElMessage.success('已保存')
     } else {
       await onetimeApi.create(form.value)
+      ElMessage.success('已保存，自动生成对应账单')
     }
-    ElMessage.success('已保存'); dialog.value = false; load()
+    dialog.value = false; load()
   } finally { saving.value = false }
 }
 function openEdit(row) {
@@ -103,3 +124,16 @@ async function onReceive(row) {
 
 onMounted(() => { loadRefs(); load() })
 </script>
+
+<style scoped>
+.action-col {
+  display: flex;
+  gap: 4px;
+  white-space: nowrap;
+  justify-content: center;
+}
+.action-col :deep(.el-button) {
+  margin: 0;
+  padding: 0 6px;
+}
+</style>

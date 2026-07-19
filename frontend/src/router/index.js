@@ -22,8 +22,15 @@ const routes = [
       { path: 'payment-verify', name: 'payment-verify', component: () => import('../views/PaymentVerify.vue'), meta: { title: '收款核对', perms: ['payment:verify'] } },
       { path: 'salaries', name: 'salaries', component: () => import('../views/SalaryList.vue'), meta: { title: '薪资管理' } },
       { path: 'salaries/:uid/:year/:month', name: 'salary-detail', component: () => import('../views/SalaryDetail.vue'), meta: { title: '薪资明细' } },
+      { path: 'salary-settlement', name: 'salary-settlement', component: () => import('../views/SalarySettlement.vue'), meta: { title: '薪资结算', perms: ['salary:manage'] } },
       { path: 'reports', name: 'reports', component: () => import('../views/ReportView.vue'), meta: { title: '报表中心', perms: ['report:view'] } },
-      { path: 'system', name: 'system', component: () => import('../views/SystemView.vue'), meta: { title: '系统设置', perms: ['admin:config'] } },
+      { path: 'system/users', name: 'system-users', component: () => import('../views/UserManage.vue'), meta: { title: '用户管理', perms: ['admin:config'] } },
+      { path: 'system/cost-presets', name: 'system-cost', component: () => import('../views/CostPreset.vue'), meta: { title: '成本预设', perms: ['admin:config'] } },
+      { path: 'system/bonus-tiers', name: 'system-bonus', component: () => import('../views/BonusTier.vue'), meta: { title: '阶梯奖金', perms: ['admin:config'] } },
+      { path: 'system/payment-channels', name: 'system-payment-channels', component: () => import('../views/PaymentChannel.vue'), meta: { title: '收款渠道', perms: ['admin:config'] } },
+      { path: 'system/service-types', name: 'system-service-types', component: () => import('../views/ServiceType.vue'), meta: { title: '服务类型', perms: ['admin:config'] } },
+      { path: 'prepayments', name: 'prepayments', component: () => import('../views/PrepaymentList.vue'), meta: { title: '预付款明细' } },
+      { path: 'system', redirect: '/system/users' },
       { path: 'admin/tenants', name: 'admin-tenants', component: () => import('../views/AdminTenants.vue'), meta: { title: '租户管理', role: 'super_admin' } },
       { path: 'admin/reg-codes', name: 'admin-reg-codes', component: () => import('../views/AdminRegCodes.vue'), meta: { title: '注册码管理', role: 'super_admin' } }
     ]

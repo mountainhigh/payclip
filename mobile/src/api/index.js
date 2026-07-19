@@ -17,8 +17,11 @@ export const paymentApi = {
   list: (params) => request.get('/payments', { params }),
   get: (id) => request.get(`/payments/${id}`),
   create: (data) => request.post('/payments', data),
-  verify: (id, action, rejectReason) => request.post(`/payments/${id}/verify`, { action, reject_reason: rejectReason }),
-  batchVerify: (ids, action) => request.post('/payments/batch-verify', { ids, action }),
+  verify: (id, body) => request.post(`/payments/${id}/verify`, body),
+  batchVerify: (body) => request.post('/payments/batch-verify', body),
+  updateAllocations: (id, body) => request.put(`/payments/${id}/allocations`, body),
+  resubmit: (id, body) => request.post(`/payments/${id}/resubmit`, body),
+  void: (id) => request.post(`/payments/${id}/void`, {}),
   uploadScreenshot: (id, file) => {
     const formData = new FormData()
     formData.append('file', file)
@@ -27,7 +30,8 @@ export const paymentApi = {
 }
 
 export const billApi = {
-  list: (params) => request.get('/bills', { params })
+  list: (params) => request.get('/bills', { params }),
+  generateForCompany: (data) => request.post('/bills/generate-for-company', data)
 }
 
 export const salaryApi = {

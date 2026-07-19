@@ -73,11 +73,12 @@ def register(body: dict, db: Session = Depends(get_db)):
     if db.query(User).filter(User.username == username).first():
         raise HTTPException(400, "用户名已存在")
 
-    trial_days = reg_code.duration_days or 30
-    tenant = Tenant(name=company_name, plan=reg_code.plan, status="active",
+    # v3: 注册统一开 trial，付费由超管根据注册码 plan + 收款验证后手动升级（见 §2.4）
+    trial_days = 30
+    tenant = Tenant(name=company_name, plan="trial", status="active",
                     trial_expires=datetime.utcnow() + timedelta(days=trial_days),
                     plan_expires=datetime.utcnow() + timedelta(days=trial_days),
-                    max_employees=3, contact_phone=phone)
+                    max_employees=0, contact_phone=phone)  # max_employees=0 表示不限人数（§2.1）
     db.add(tenant)
     db.flush()
 
@@ -129,9 +130,7 @@ def register_employee(body: dict, db: Session = Depends(get_db)):
     if not tenant or tenant.status not in ("active", "expired_readonly"):
         raise HTTPException(403, "租户状态异常，无法注册")
 
-    emp_count = db.query(User).filter(User.tenant_id == tenant.id, User.is_active == True).count()
-    if emp_count >= tenant.max_employees:
-        raise HTTPException(403, f"已达员工上限（{tenant.max_employees}人），请联系管理员升级套餐")
+    # v3: 员工数不限，不再校验 max_employees（§2.1/§2.5）
 
     if db.query(User).filter(User.username == username).first():
         raise HTTPException(400, "用户名已存在")

@@ -6,8 +6,9 @@
       <el-button type="primary" @click="load">查询</el-button>
       <el-button type="success" @click="goCalc">月结计算</el-button>
     </div>
-    <el-table :data="rows" border>
-      <el-table-column prop="user_name" label="员工" width="120" />
+    <div class="table-scroll-container">
+    <el-table :data="rows" border style="width:100%">
+      <el-table-column prop="user_name" label="员工" min-width="120" />
       <el-table-column prop="salary_year" label="年" width="80" align="center" />
       <el-table-column prop="salary_month" label="月" width="60" align="center" />
       <el-table-column prop="base_salary" label="底薪" align="right" width="110"><template #default="{ row }">{{ fmt(row.base_salary) }}</template></el-table-column>
@@ -23,6 +24,7 @@
         </template>
       </el-table-column>
     </el-table>
+    </div>
   </div>
 </template>
 

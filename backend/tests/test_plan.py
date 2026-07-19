@@ -50,23 +50,16 @@ def test_renew_tenant(client, tenant_setup, admin_headers):
 
 
 def test_employee_limit(client, tenant_setup):
-    """员工数上限检查"""
+    """v3: 员工数不限 — 连续创建多个员工（超过原 max_employees 上限）均应成功（§2.1/§2.5）"""
     H = tenant_setup["tenant_headers"]
-    # 当前已有 2 个用户（管理员 + 测试员工），max_employees=3
-    # 尝试创建第 3 个（应该成功）
-    r = client.post("/api/users", json={
-        "username": "emp2_test", "name": "员工2", "password": "123456",
-        "permissions": ["payment:submit"], "data_scope": "SELF"
-    }, headers=H)
-    assert r.status_code == 200
-
-    # 尝试创建第 4 个（应该失败，超限）
-    r = client.post("/api/users", json={
-        "username": "emp3_test", "name": "员工3", "password": "123456",
-        "permissions": ["payment:submit"], "data_scope": "SELF"
-    }, headers=H)
-    assert r.status_code == 403
-    assert "上限" in r.json().get("detail", "")
+    # 当前已有 2 个用户（管理员 + 测试员工），原 max_employees=3
+    # v3 取消上限后，连续创建第 3、4、5 个员工都应成功
+    for i in range(3, 6):
+        r = client.post("/api/users", json={
+            "username": f"emp{i}_test", "name": f"员工{i}", "password": "123456",
+            "permissions": ["payment:submit"], "data_scope": "SELF"
+        }, headers=H)
+        assert r.status_code == 200, f"第 {i} 个员工创建失败: {r.text}"
 
 
 def test_super_admin_access(client, admin_headers):
