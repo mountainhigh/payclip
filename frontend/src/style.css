@@ -125,7 +125,23 @@
 
 .el-pagination {
   --el-pagination-hover-color: var(--primary);
-  --el-pagination-active-color: var(--primary);
+  --el-pagination-active-color: #fff;
+  --el-pagination-button-color: var(--text-regular);
+  --el-pagination-button-disabled-color: var(--text-placeholder);
+  --el-pagination-hover-bg-color: var(--primary-lightest);
+  --el-pagination-active-bg-color: var(--primary);
+}
+
+.el-pagination .el-pager li.is-active,
+.el-pagination.el-pagination .el-pager li.is-active {
+  background-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+.el-pagination .el-pager li:hover,
+.el-pagination .btn-prev:hover,
+.el-pagination .btn-next:hover {
+  color: var(--primary) !important;
 }
 
 .el-date-editor.el-input__wrapper {

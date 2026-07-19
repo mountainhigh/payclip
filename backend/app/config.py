@@ -1,5 +1,9 @@
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# 从 backend/.env 加载环境变量（文件不存在时静默跳过；不覆盖已存在的环境变量）
+load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://salary:salary123@localhost:3306/salary_manager")
 JWT_SECRET = os.getenv("JWT_SECRET", "salary-manager-dev-secret-key")

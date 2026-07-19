@@ -36,9 +36,11 @@ htmlcov/
 # IDE
 .vscode/
 .idea/
+.workbuddy/
 *.swp
 *.swo
 *~
+*.bak
 
 # OS
 .DS_Store

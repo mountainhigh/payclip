@@ -5,8 +5,6 @@
 </template>
 
 <script setup>
-import { ConfigProviderThemeVars } from 'vant'
-
 const themeVars = {
   primaryColor: '#C68B8B',
   primaryLight: '#D4A5A5',

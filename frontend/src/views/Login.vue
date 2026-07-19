@@ -17,7 +17,6 @@
       </el-form>
       <div class="login-footer">
         <router-link to="/register">凭注册码注册</router-link>
-        <span class="hint">默认管理员：admin / admin123</span>
       </div>
     </div>
   </div>

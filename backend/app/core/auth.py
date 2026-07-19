@@ -92,6 +92,19 @@ def require_write_access(user=Depends(get_current_user), db: Session = Depends(g
     return user
 
 
+def require_tenant_user(user=Depends(get_current_user), db: Session = Depends(get_db)):
+    """要求非 super_admin 用户（用于创建租户级数据的接口），同时校验只读降级状态"""
+    if user.role == "super_admin" or user.tenant_id is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="平台管理员不能直接创建租户数据，请切换到租户账号")
+    from ..models import Tenant
+    tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
+    if tenant and tenant.status == "expired_readonly":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="套餐已过期，数据为只读模式，续费后可继续操作")
+    return user
+
+
 def get_tenant_id(user) -> int:
     """获取当前用户的租户ID，super_admin 返回 None"""
     return user.tenant_id
